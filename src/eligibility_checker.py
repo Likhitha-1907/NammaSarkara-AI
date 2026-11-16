@@ -61,23 +61,50 @@ def check_pm_kisan_eligibility(profile):
     if land_acquisition is None:
         return {
             "status": "NEED MORE INFORMATION",
-            "reason": "We need to know whether the land was acquired after 1 February 2019."
+            "reason": "We need to know whether ownership of the land was transferred after 1 February 2019."
         }
 
+    # If ownership changed after the cutoff date
     if land_acquisition is True:
-        return {
-            "status": "NEED MORE INFORMATION",
-            "reason": "This land acquisition case requires official verification. Please check the PM-KISAN portal."
-        }
 
+        inheritance = profile.get("land_transfer_due_to_death")
+
+        if inheritance is None:
+            return {
+                "status": "NEED MORE INFORMATION",
+                "reason": "We need to know whether the land was inherited because the previous owner passed away."
+            }
+
+        if inheritance is False:
+            return {
+                "status": "NOT ELIGIBLE",
+                "reason": (
+                    "The land was transferred after 1 February 2019 "
+                    "for a reason other than inheritance due to the previous "
+                    "landowner's death. The transferee does not qualify under "
+                    "the stated PM-KISAN land ownership rule."
+                )
+            }
+
+        if inheritance is True:
+            return {
+                "status": "POTENTIALLY ELIGIBLE",
+                "reason": (
+                    "The land was inherited due to the previous owner's death. "
+                    "PM-KISAN guidelines allow such cases to be considered, "
+                    "subject to all other conditions and official verification "
+                    "of land records by the authorities."
+                )
+            }
+
+    # No post-cutoff land transfer identified
     return {
-        "status": "ELIGIBLE",
+        "status": "POTENTIALLY ELIGIBLE",
         "reason": (
             "No exclusion was identified from the information provided. "
             "Final eligibility is subject to government verification."
         )
     }
-
 
 
 def get_yes_no_answer(question):
@@ -106,12 +133,12 @@ def collect_user_profile():
 
     questions = {
         "institutional_landholder": "Is the land held by an institution?",
-        "constitutional_post": "Does a family member fall under the excluded constitutional post category?",
+        "constitutional_post": "Does a family member fall under an excluded constitutional post category?",
         "political_position": "Does a family member fall under an excluded political category?",
-        "government_employee": "Does a family member fall under an excluded government employment category?",
-        "pension_10000_or_more": "Does a family member receive an excluded government pension of ₹10,000 or more per month?",
+        "government_employee": "Is any family member a serving or retired employee of a Central or State Government department, PSU, attached office, autonomous institution, or regular local body, excluding MTS, Class IV and Group D employees?",
+        "pension_10000_or_more": "Does a family member receive a monthly government pension of ₹10,000 or more, excluding eligible MTS, Class IV and Group D retirees?",
         "income_tax_payer": "Did a family member pay income tax in the last assessment year?",
-        "practising_professional": "Is a family member an excluded practising registered professional?",
+        "practising_professional": "Is any family member an excluded practising registered professional?",
         "nri_family": "Does the farmer family fall under the NRI exclusion?"
     }
 
@@ -119,8 +146,15 @@ def collect_user_profile():
         profile[field] = get_yes_no_answer(question)
 
     profile["land_acquired_after_cutoff"] = get_yes_no_answer(
-        "Was the land acquired after 1 February 2019?"
+        "Was ownership of the agricultural land transferred after 1 February 2019?"
     )
+
+    if profile["land_acquired_after_cutoff"] is True:
+        profile["land_transfer_due_to_death"] = get_yes_no_answer(
+            "Was the land transferred because the previous landowner passed away?"
+        )
+    else:
+        profile["land_transfer_due_to_death"] = False
 
     return profile
 
@@ -141,7 +175,3 @@ if __name__ == "__main__":
 
     if "missing_fields" in result:
         print("Missing information:", result["missing_fields"])
-
-
-
-   
