@@ -36,34 +36,33 @@ NammaSarkara AI provides a simple interface where citizens can ask questions abo
 - CSV
 - Pytest
 
+
 ## Project Structure
 
 ```text
 NammaSarkara-AI/
-â”‚
-â”œâ”€â”€ agent/
-â”‚   â”œâ”€â”€ scheme_agent.py
-â”‚   â””â”€â”€ test_api_connection.py
-â”‚
-â”œâ”€â”€ data/
-â”‚   â”œâ”€â”€ schemes.csv
-â”‚   â””â”€â”€ scheme_research.csv
-â”‚
-â”œâ”€â”€ database/
-â”‚   â””â”€â”€ schemes.db
-â”‚
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ validate_data.py
-â”‚   â”œâ”€â”€ build_database.py
-â”‚   â”œâ”€â”€ scheme_search.py
-â”‚   â””â”€â”€ eligibility_checker.py
-â”‚
-â”œâ”€â”€ tests/
-â”‚   â””â”€â”€ test_eligibility.py
-â”‚
-â”œâ”€â”€ app.py
-â”œâ”€â”€ requirements.txt
-â””â”€â”€ README.md
+|
+|-- agent/
+|   |-- scheme_agent.py
+|   |-- test_api_connection.py
+|
+|-- data/
+|   |-- schemes.csv
+|   |-- scheme_research.csv
+|
+|-- src/
+|   |-- validate_data.py
+|   |-- build_database.py
+|   |-- scheme_search.py
+|   |-- eligibility_checker.py
+|
+|-- tests/
+|   |-- test_eligibility.py
+|
+|-- app.py
+|-- requirements.txt
+|-- README.md
+|-- .gitignore
 ```
 
 ## How to Run the Project
@@ -76,7 +75,7 @@ NammaSarkara-AI/
 python -m pip install -r requirements.txt
 ```
 
-4. Configure your OpenAI API key in a local `.env` file.
+4. Create a local `.env` file and add your OpenAI API key. Never share this key or commit the `.env` file to GitHub.
 5. Validate the scheme data:
 
 ```bash
@@ -94,6 +93,7 @@ python src/build_database.py
 ```bash
 python -m streamlit run app.py
 ```
+
 
 ## Testing
 
