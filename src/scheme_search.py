@@ -11,7 +11,62 @@ def search_schemes(question):
     if not question.strip():
         return []
 
-    keywords = re.findall(r"[a-zA-Z0-9-]+", question.lower())
+    # Hindi and Kannada keyword translations
+    language_keywords = {
+        # Hindi
+        "किसान": "farmer",
+        "किसानों": "farmers",
+        "कृषि": "agriculture",
+        "खेती": "farming",
+        "योजना": "scheme",
+        "योजनाएं": "schemes",
+        "योजनाओं": "schemes",
+        "छात्र": "student",
+        "छात्रों": "students",
+        "महिला": "woman",
+        "महिलाओं": "women",
+        "लाभ": "benefits",
+        "पैसा": "financial",
+        "सहायता": "assistance",
+
+        # Kannada
+        "ಕಾಲೇಜು": "college",
+        "ವಿದ್ಯಾರ್ಥಿ": "student",
+        "ವಿದ್ಯಾರ್ಥಿಗಳು": "students",
+        "ವಿದ್ಯಾರ್ಥಿವೇತನ": "scholarship",
+        "ವಿದ್ಯಾರ್ಥಿವೇತನಗಳು": "scholarship",
+        "ವಿದ್ಯಾರ್ಥಿವೇತನದ": "scholarship",
+        "ಯೋಜನೆ": "scheme",
+        "ಯೋಜನೆಗಳು": "schemes",
+        "ಸಹಾಯ": "assistance",
+        "ಹಣಕಾಸು": "financial",
+        "ಸರ್ಕಾರಿ": "government",
+        "ರೈತ": "farmer",
+        "ರೈತರು": "farmers",
+        "ರೈತರ": "farmers",
+        "ಕೃಷಿ": "agriculture",
+        "ಕೃಷಿಕ": "farmer",
+        "ಕೃಷಿಕರು": "farmers",
+        "ಬೇಸಾಯ": "farming",
+        "ಬೆಳೆ": "crop",
+        "ಬೆಳೆಗಳು": "crops",
+        "ಯೋಜನೆ": "scheme",
+        "ಯೋಜನೆಗಳು": "schemes",
+    }
+
+    question_words = question.lower().split()
+
+    translated_words = [
+        language_keywords.get(word.strip("।,.?!"), word)
+        for word in question_words
+    ]
+
+    translated_question = " ".join(translated_words)
+
+    keywords = re.findall(
+        r"[a-zA-Z0-9-]+",
+        translated_question
+    )
 
     stop_words = {
         "i", "am", "a", "an", "the", "is", "are", "for",
@@ -48,7 +103,6 @@ def search_schemes(question):
 
     with sqlite3.connect(DB_FILE) as connection:
         connection.row_factory = sqlite3.Row
-
         results = {}
 
         for keyword in keywords:
@@ -87,19 +141,18 @@ def search_schemes(question):
         return ranked_results
 
 
-if __name__ == "__main__":
-    question = input("Ask about a government scheme: ")
+def get_scheme_details(scheme_name):
+    """
+    Retrieve complete information about a scheme
+    from the local database.
+    """
 
-    schemes = search_schemes(question)
+    results = search_schemes(scheme_name)
 
-    if schemes:
-        print(f"\nFound {len(schemes)} matching scheme(s):")
+    if not results:
+        return None
 
-        for scheme in schemes:
-            print("\nScheme:", scheme["scheme_name"])
-            print("Category:", scheme["category"])
-            print("Beneficiary:", scheme["target_beneficiary"])
-            print("Benefits:", scheme["benefits"])
-            print("Matching keywords:", scheme["_matches"])
-    else:
-        print("\nNo matching schemes found.")
+    scheme = results[0].copy()
+    scheme.pop("_matches", None)
+
+    return scheme
